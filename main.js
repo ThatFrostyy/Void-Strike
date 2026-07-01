@@ -2913,6 +2913,14 @@ class ShooterScene extends Phaser.Scene {
     this.scene.restart();
   }
 
+  resetCameraForOverlay() {
+    const camera = this.cameras.main;
+    camera.stopFollow();
+    camera.setBounds(0, 0, this.width, this.height);
+    camera.scrollX = 0;
+    camera.scrollY = 0;
+  }
+
   setCanvasCursor(cursor) {
     this.input.setDefaultCursor(cursor);
     this.game.canvas.style.cursor = cursor;
@@ -3454,21 +3462,17 @@ class ShooterScene extends Phaser.Scene {
 
   addSmokePuffs(x, y, count, scale) {
     for (let i = 0; i < count; i += 1) {
-      const puffKey = i % 2 === 0 ? "smoke" : "smokeLarge";
       const angle = Phaser.Math.FloatBetween(0, Math.PI * 2);
       const distance = Phaser.Math.Between(8, 48);
-      const puff = this.add.image(x, y, puffKey)
+      const puff = this.add.circle(x, y, Phaser.Math.FloatBetween(8, 18) * scale, 0xb8c0d2, 0.24)
         .setDepth(DEPTH.effects - 1)
-        .setScale(0.25 * scale)
-        .setAlpha(0.55)
-        .setTint(0xb8c0d2);
+        .setBlendMode(Phaser.BlendModes.ADD);
       this.tweens.add({
         targets: puff,
         x: x + Math.cos(angle) * distance,
         y: y + Math.sin(angle) * distance,
-        scale: Phaser.Math.FloatBetween(0.65, 1.05) * scale,
+        scale: Phaser.Math.FloatBetween(1.6, 2.65),
         alpha: 0,
-        angle: Phaser.Math.Between(-90, 90),
         duration: Phaser.Math.Between(460, 760),
         ease: "Sine.easeOut",
         onComplete: () => puff.destroy(),
@@ -3548,6 +3552,7 @@ class ShooterScene extends Phaser.Scene {
 
   createUpgradeOverlay() {
     if (this.upgradeOverlay) this.upgradeOverlay.destroy(true);
+    this.resetCameraForOverlay();
 
     this.upgradeOverlay = this.add.container(0, 0)
       .setDepth(DEPTH.overlay + 10)
@@ -3594,6 +3599,18 @@ class ShooterScene extends Phaser.Scene {
     this.upgradeOverlay.add([closeButton.button, closeButton.text, resetButton.button, resetButton.text]);
     this.upgradeCloseButton = closeButton;
     this.upgradeResetButton = resetButton;
+    this.pinToScreen([
+      this.upgradeOverlay,
+      shade,
+      panel,
+      title,
+      wallet,
+      ...this.upgradeRows.flatMap((row) => [row.bg, row.label, row.status, row.button.button, row.button.text]),
+      closeButton.button,
+      closeButton.text,
+      resetButton.button,
+      resetButton.text,
+    ]);
     this.updateUpgradeOverlay();
   }
 
@@ -3683,6 +3700,7 @@ class ShooterScene extends Phaser.Scene {
 
   endGame() {
     this.isGameOver = true;
+    this.resetCameraForOverlay();
     if (this.score > this.bestScore) {
       this.bestScore = this.score;
       this.saveStoredNumber(STORAGE_KEYS.bestScore, this.bestScore);
