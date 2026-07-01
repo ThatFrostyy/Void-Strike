@@ -2130,6 +2130,7 @@ class ShooterScene extends Phaser.Scene {
     enemy.setAlpha(1);
     enemy.setData("type", type);
     enemy.setData("isBoss", isBoss);
+    enemy.setData("dying", false);
     enemy.setData("hp", maxHp);
     enemy.setData("maxHp", maxHp);
     enemy.setData("seed", Phaser.Math.FloatBetween(0, Math.PI * 2));
@@ -2701,9 +2702,18 @@ class ShooterScene extends Phaser.Scene {
   }
 
   damageEnemy(bullet, enemy) {
+    if (!enemy?.active || enemy.getData("dying")) {
+      bullet.disableBody(true, true);
+      return;
+    }
+
     const damage = bullet.getData("damage") || 1;
     const type = enemy.getData("type");
     const isBoss = enemy.getData("isBoss") === true;
+    if (!type) {
+      bullet.disableBody(true, true);
+      return;
+    }
     bullet.disableBody(true, true);
 
     enemy.setData("hp", enemy.getData("hp") - damage);
@@ -2724,6 +2734,7 @@ class ShooterScene extends Phaser.Scene {
 
     const deathX = enemy.x;
     const deathY = enemy.y;
+    enemy.setData("dying", true);
     this.cleanupEnemy(enemy);
     this.score += type.score;
     this.updateScoreText();
@@ -3559,8 +3570,7 @@ class ShooterScene extends Phaser.Scene {
       .setVisible(false)
       .setScrollFactor(0);
     const shade = this.add.rectangle(0, 0, this.width, this.height, 0x01040d, 0.76)
-      .setOrigin(0)
-      .setInteractive();
+      .setOrigin(0);
     const panelWidth = Math.min(610, this.width - 48);
     const panelHeight = 430;
     const centerX = this.width / 2;
@@ -3689,13 +3699,14 @@ class ShooterScene extends Phaser.Scene {
     this.drawFloatingText(x, y - 118, `+${reward} ${this.t("stars")}`, 0xffdf5b);
     this.drawFloatingText(x, y - 146, this.t("bossReward"), 0xff9daf);
     this.playSfx("starPickup", { volume: 0.28, rate: 0.86 });
-    this.time.delayedCall(280, () => {
-      if (!this.isGameOver) {
-        const x = this.isSurvivalMode() ? this.player.x + Phaser.Math.Between(-170, 170) : Phaser.Math.Clamp(this.player.x + Phaser.Math.Between(-120, 120), 70, this.width - 70);
-        const y = this.isSurvivalMode() ? this.player.y + Phaser.Math.Between(-150, 150) : Math.max(80, this.player.y - 260);
-        this.spawnPowerup({ x, y });
-      }
-    });
+    this.grantBossPowerReward();
+  }
+
+  grantBossPowerReward() {
+    const type = Phaser.Utils.Array.GetRandom(POWERUP_TYPES.filter((power) => ["rapid", "overdrive"].includes(power.id)));
+    this.activePowerups[type.id] = { type, until: this.time.now + Math.min(type.duration, 7000) };
+    this.playPowerupBurst(this.player.x, this.player.y, type);
+    this.drawFloatingText(this.player.x, this.player.y - 102, type.name, type.color);
   }
 
   endGame() {
