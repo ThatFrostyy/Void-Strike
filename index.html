@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>VOID STRIKE - Play Free</title>
+    <link rel="icon" type="image/png" href="assets/PNG/playerShip1_blue.png" />
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family: "Kenney Future", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: #03050b;
+        color: #dfe9ff;
+      }
+
+      @font-face {
+        font-family: "Kenney Future";
+        src: url("assets/Fonts/kenvector_future.ttf") format("truetype");
+        font-display: swap;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        width: 100vw;
+        height: 100vh;
+        margin: 0;
+        overflow: hidden;
+        background:
+          radial-gradient(circle at 50% 15%, rgba(45, 102, 170, 0.24), transparent 34rem),
+          linear-gradient(180deg, #060916 0%, #02040a 100%);
+      }
+
+      #game-container {
+        position: fixed;
+        inset: 0;
+        width: 100vw;
+        height: 100vh;
+      }
+
+      #game-container canvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+        border: 0;
+        outline: none;
+        box-shadow: none;
+        cursor: none;
+      }
+
+      #game-container canvas:focus {
+        outline: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="game-container"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.90.0/dist/phaser.min.js"></script>
+    <script src="main.js?v=20260701-preload"></script>
+  </body>
+</html>
